@@ -21,7 +21,7 @@ where directions is the set of coordinates returned by jump point search and Way
 Smoothing creates a list of waypoints along the path that are next to obstacles. This allows the drone to move at different angles than 45 degrees and causes the drone to more gradually deviate from a straight path in order to avoid an obstacle. Note that there are a lot more waypoints returned near obstacles than far away from them.  
 
 ## Example:
-grid = [[False for j in range(8)] for i in range(8)]
+grid = [[False for j in range(8)] for i in range(8)]  
 grid[4][4] = True  
 grid[3][3] = True  
 grid[3][4] = True  
