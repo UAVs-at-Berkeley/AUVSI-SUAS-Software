@@ -3,7 +3,7 @@
 ## How to run:  
 1. Instantiate WayPointsProblem(grid, starting position, ending position)  
     grid should be a 2d grid of booleans with false if there is no obstacle and true if there is  
-`   starting and ending position should be a coordinate (x, y)   
+    starting and ending position should be a coordinate (x, y)   
 2. directions, cost = aStarSearch(WayPointsProblem)  
     calling aStarSearch on the WayPointsProblem instance returns a tuple (directions, cost) for the shortest path from the start node to the goal node  
     directions is a list of coordinates/waypoints to move to  
