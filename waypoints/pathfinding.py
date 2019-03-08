@@ -29,7 +29,12 @@ class WayPointsProblem:
         x, y, cost, direction = state
         next_diagonal = []
         if self.valid(x, y) and not self.obstacle(x + direction[0], y + direction[1]):
-            next_diagonal = [(x + direction[0], y + direction[1], cost + math.sqrt(2), direction)] 
+            next_diagonal = [(x + direction[0], y + direction[1], cost + math.sqrt(2), direction)]
+            if self.obstacle(x, y + direction[1]) and not self.obstacle(x, y + 2 * direction[1]):
+                next_diagonal.append((x + direction[0], y + direction[1], cost + math.sqrt(2), (-direction[0], direction[1])))
+            if self.obstacle(x + direction[0], y) and not self.obstacle(x + 2 * direction[0], y):
+                next_diagonal.append((x + direction[0], y + direction[1], cost + math.sqrt(2), (direction[0], -direction[1]))) 
+                 
         return self.search_horizontal(state, direction[0]) + self.search_vertical(state, direction[1]) + next_diagonal
           
     def obstacle(self, x, y):
@@ -41,7 +46,8 @@ class WayPointsProblem:
         x, y, cost, direction = state
         nodes = [];
         a = []
-        
+       
+        x = x - hdir 
         while self.valid(x + hdir, y):
             if self.obstacle(x + hdir, y):
                 return nodes
@@ -49,10 +55,10 @@ class WayPointsProblem:
             if (x + hdir, y) == self.goal: 
                 return [(x + hdir, y, cost + 1, "END")]
             
-            if self.obstacle(x + hdir, y - 1) and not (self.valid(x + hdir * 2, y - 1) and not self.obstacle(x + hdir * 2, y - 1)) or not self.valid(x + hdir * 2, y - 1):
+            if self.obstacle(x + hdir, y - 1) and not self.obstacle(x + hdir * 2, y - 1):
                 nodes.append((x + hdir, y, cost + 1, (hdir, -1)))
       
-            if self.obstacle(x + hdir, y + 1) and ((self.valid(x + hdir * 2, y + 1) and not self.obstacle(x + hdir * 2, y + 1)) or not self.valid(x + hdir * 2, y + 1)):
+            if self.obstacle(x + hdir, y + 1) and not self.obstacle(x + hdir * 2, y + 1):
                 nodes.append((x + hdir, y, cost + 1, (hdir, 1)))
             
             cost = cost + 1
@@ -70,10 +76,10 @@ class WayPointsProblem:
             if (x, y + vdir) == self.goal: 
                 return [(x, y + vdir, cost + 1, "END")] 
     
-            if self.obstacle(x - 1, y + vdir) and ((self.valid(x - 1, y + vdir * 2) and not self.obstacle(x - 1, y + vdir * 2)) or not self.valid(x - 1, y + vdir * 2)):
+            if self.obstacle(x - 1, y + vdir) and not self.obstacle(x - 1, y + vdir * 2):
                 nodes.append((x, y + vdir, cost + 1,  (-1, vdir)))
       
-            if self.obstacle(x + 1, y + vdir) and ((self.valid(x + 1, y + vdir * 2) and not self.obstacle(x + 1, y + vdir * 2)) or not self.valid(x + 1, y + vdir * 2)):
+            if self.obstacle(x + 1, y + vdir) and not self.obstacle(x + 1, y + vdir * 2):
                 nodes.append((x, y + vdir, cost + 1, (1, vdir)))
  
             cost = cost + 1
@@ -99,7 +105,6 @@ def aStarSearch(problem):
     while(not q.empty()):
         priority, item = q.get()
         expand, directions = item
-        #print(expand)
         if problem.isGoalState(expand):
             expand = (expand[0], expand[1], expand[2], expand[3])
             return directions + [(expand[0], expand[1])], expand[2]
@@ -134,4 +139,17 @@ def smooth(path, problem):
             y0 += ydiff
     waypoints.append((path[len(path) - 1][0], path[len(path) - 1][1]))
     return waypoints
-  
+
+grid = [[False for j in range(8)] for i in range(8)]
+grid[2][6] = True
+grid[2][5] = True
+grid[2][4] = True
+grid[2][3] = True
+grid[2][2] = True
+grid[2][1] = True
+grid[2][0] = True
+problem = WayPointsProblem(grid, (0, 3), (7, 3))
+directions, cost = aStarSearch(problem)
+print("Directions: ", directions)
+print("Smoothed Directions: ", smooth(directions, problem))
+print("Cost: ", cost) 
