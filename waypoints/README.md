@@ -32,6 +32,6 @@ grid[4][1] = True
 problem = WayPointsProblem(grid, (0, 3), (7, 3))  
 directions, cost = aStarSearch(problem)  
 print("Directions: ", directions)  
-print("Smoothed Directions: ", smooth(directions, problem))
+print("Smoothed Directions: ", smooth(directions, problem))  
 print("Cost: ", cost)
 
