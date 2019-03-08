@@ -140,16 +140,3 @@ def smooth(path, problem):
     waypoints.append((path[len(path) - 1][0], path[len(path) - 1][1]))
     return waypoints
 
-grid = [[False for j in range(8)] for i in range(8)]
-grid[2][6] = True
-grid[2][5] = True
-grid[2][4] = True
-grid[2][3] = True
-grid[2][2] = True
-grid[2][1] = True
-grid[2][0] = True
-problem = WayPointsProblem(grid, (0, 3), (7, 3))
-directions, cost = aStarSearch(problem)
-print("Directions: ", directions)
-print("Smoothed Directions: ", smooth(directions, problem))
-print("Cost: ", cost) 
