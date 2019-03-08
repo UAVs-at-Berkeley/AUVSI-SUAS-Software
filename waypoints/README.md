@@ -1,6 +1,6 @@
-Pathing for AUVSI Drone using Jump Point Search 
+# Pathing for AUVSI Drone using Jump Point Search 
 
-How to run:
+## How to run:
 1. Instantiate WayPointsProblem(grid, starting position, ending position)
     grid should be a 2d grid of booleans with false if there is no obstacle and true if there is
 `   starting and ending position should be a coordinate (x, y) 
@@ -9,7 +9,7 @@ How to run:
     directions is a list of coordinates/waypoints to move to
     cost is the cost of the path (given that we can only move horizontally/vertically at a 45 degree angle)
 
-Smoothing:
+## Smoothing:
 There are two problems with the list of coordinates returned by jump point search: 
 1. Because of the nature of the jump point search algorithm, the drone will try to deviate from a straight path earlier to avoid obstacles, which can cause room for error.
 2. The waypoints returned by jump point search only cause the move at a 45 degree angle or in a straight line 
@@ -20,7 +20,7 @@ where directions is the set of coordinates returned by jump point search and Way
 
 Smoothing creates a list of waypoints along the path that are next to obstacles. This allows the drone to move at different angles than 45 degrees and causes the drone to more gradually deviate from a straight path in order to avoid an obstacle. Note that there are a lot more waypoints returned near obstacles than far away from them.
 
-Example:
+## Example:
 grid = []
 for i in range(8):
     grid.append([False for j in range(8)])
