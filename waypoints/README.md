@@ -12,7 +12,7 @@
 ## Smoothing:  
 There are two problems with the list of coordinates returned by jump point search:   
 1. Because of the nature of the jump point search algorithm, the drone will try to deviate from a straight path earlier to avoid obstacles, which can cause room for error.  
-2. The waypoints returned by jump point search only cause the move at a 45 degree angle or in a straight line   
+2. The waypoints returned by jump point search only cause the drone to move at a 45 degree angle or in a straight line   
 
 To fix this, call:  
 smooth(directions, WayPointsProblems)  
