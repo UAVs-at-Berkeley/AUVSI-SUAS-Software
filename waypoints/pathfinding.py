@@ -134,22 +134,4 @@ def smooth(path, problem):
             y0 += ydiff
     waypoints.append((path[len(path) - 1][0], path[len(path) - 1][1]))
     return waypoints
-            
-        
-
-#grid if false if there is no obstacle and true is there is one
-grid = []
-for i in range(8):
-    grid.append([False for j in range(8)])
-grid[4][4] = True
-grid[3][3] = True
-grid[3][4] = True
-grid[5][3] = True
-grid[4][2] = True
-grid[4][0] = True
-grid[4][1] = True
-problem = WayPointsProblem(grid, (0, 3), (7, 3))
-directions, cost = aStarSearch(problem)
-print("Directions: ", directions)
-print("Smoothed Directions: ", smooth(directions, problem))
-print("Cost: ", cost)
+  
