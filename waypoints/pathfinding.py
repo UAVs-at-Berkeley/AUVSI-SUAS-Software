@@ -8,18 +8,7 @@ class WayPointsProblem:
         self.goal = goalPos
         
     def getStartState(self):
-        #state is (x, y, cost, (x_direction, y_direction))
-        '''
-        if self.goal[0] - self.start[0] == 0:
-            xdiff = 1
-        else:
-            xdiff = int((self.goal[0] - self.start[0]) / abs(self.goal[0] - self.start[0]))
-        if self.goal[1] - self.start[1] == 0:
-            ydiff = 1 
-        else:
-            ydiff = int((self.goal[1] - self.start[1]) / abs(self.goal[1] - self.start[1]))
-        return [(self.start[0], self.start[1], 0, (xdiff, ydiff))]
-        '''
+        '''state is (x, y, cost, (x_direction, y_direction))'''
         return [(self.start[0], self.start[1], 0, (1, 1)), (self.start[0], self.start[1], 0, (1, -1)), (self.start[0], self.start[1], 0, (-1, 1)), (self.start[0], self.start[1], 0, (-1, -1))]
 
     def valid(self, x, y):
