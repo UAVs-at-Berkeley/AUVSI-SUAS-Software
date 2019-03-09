@@ -9,10 +9,14 @@ class WayPointsProblem:
         
     def getStartState(self):
         '''state is (x, y, cost, (x_direction, y_direction))'''
-        if not self.valid(self.start[0], self.start[1]) or not self.valid(self.goal[0], self.goal[1]): 
-            print("ERROR: Start or end state is not valid!")
-        elif self.obstacle(self.start[0], self.start[1]) or self.obstacle(self.goal[0], self.goal[1]):
-            print("ERROR: Start of end state is an obstacle or out of bounds!")
+        if not self.valid(self.start[0], self.start[1]):
+            print("ERROR: Start state is not valid!")
+        if not self.valid(self.goal[0], self.goal[1]): 
+            print("ERROR: End state is not valid!")
+        if self.obstacle(self.start[0], self.start[1]): 
+            print("ERROR: Start state is an obstacle or out of bounds!") 
+        if self.obstacle(self.goal[0], self.goal[1]):
+            print("ERROR: End state is an obstacle or out of bounds!")
          
         return [(self.start[0], self.start[1], 0, (1, 1)), (self.start[0], self.start[1], 0, (1, -1)), (self.start[0], self.start[1], 0, (-1, 1)), (self.start[0], self.start[1], 0, (-1, -1))]
 
