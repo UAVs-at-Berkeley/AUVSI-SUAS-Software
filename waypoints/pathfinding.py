@@ -132,5 +132,18 @@ def smooth(path, problem):
             x0 += xdiff
             y0 += ydiff
     waypoints.append((path[len(path) - 1][0], path[len(path) - 1][1]))
+    
+    smoothedPoints = waypoints[:]
+    for i in range(len(waypoints) - 2):
+        x0, y0, x1, y1 = waypoints[i][0], waypoints[i][1], waypoints[i + 1][0], waypoints[i + 1][1]
+        x2, y2 = waypoints[i + 2][0], waypoints[i + 2][1]
+        if (y1 - y0) * (x2 - x1) == (x1 - x0) * (y2 - y1):
+            smoothedPoints[i + 1] = None
+    
+    waypoints = []
+    for i in smoothedPoints:
+        if i is not None:
+            waypoints.append(i)
+        
     return waypoints
 

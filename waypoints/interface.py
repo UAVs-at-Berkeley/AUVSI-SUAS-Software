@@ -111,7 +111,7 @@ for i in range(len(grid)):
     print(" ")
 '''
 grid = [[True for i in range(50)] for j in range(50)]
-grid = fillGrid(grid, [(1, 2), (25, 40), (48, 2)], [(20, 20, 6, 6, 5)])
+grid = fillGrid(grid, [(1, 2), (25, 40), (48, 2)], [(20, 20, 6, 6, 5), (30, 8, 3, 3, 300)])
 for i in range(len(grid[0]) - 1, 0, -1):
     for j in range(len(grid)):
         print('*' if grid[j][i] else '-', end=' ')
