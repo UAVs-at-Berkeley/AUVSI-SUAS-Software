@@ -9,6 +9,11 @@ class WayPointsProblem:
         
     def getStartState(self):
         '''state is (x, y, cost, (x_direction, y_direction))'''
+        if not self.valid(self.start[0], self.start[1]) or not self.valid(self.goal[0], self.goal[1]): 
+            print("ERROR: Start or end state is not valid!")
+        elif self.obstacle(self.start[0], self.start[1]) or self.obstacle(self.goal[0], self.goal[1]):
+            print("ERROR: Start of end state is an obstacle or out of bounds!")
+         
         return [(self.start[0], self.start[1], 0, (1, 1)), (self.start[0], self.start[1], 0, (1, -1)), (self.start[0], self.start[1], 0, (-1, 1)), (self.start[0], self.start[1], 0, (-1, -1))]
 
     def valid(self, x, y):
@@ -35,8 +40,7 @@ class WayPointsProblem:
         x, y, cost, direction = state
         nodes = [];
         a = []
-       
-        x = x - hdir 
+         
         while self.valid(x + hdir, y):
             if self.obstacle(x + hdir, y):
                 return nodes
@@ -58,9 +62,10 @@ class WayPointsProblem:
     def search_vertical(self, state, vdir): 
         x, y, cost, direction = state
         nodes = [];
+
         while self.valid(x, y + vdir):
             if self.obstacle(x, y + vdir): 
-                return []   
+                return nodes 
     
             if (x, y + vdir) == self.goal: 
                 return [(x, y + vdir, cost + 1, "END")] 
@@ -129,16 +134,3 @@ def smooth(path, problem):
     waypoints.append((path[len(path) - 1][0], path[len(path) - 1][1]))
     return waypoints
 
-grid = [[False for j in range(8)] for i in range(8)]
-grid[4][4] = True
-grid[3][3] = True
-grid[3][4] = True
-grid[5][3] = True
-grid[4][2] = True
-grid[4][0] = True
-grid[4][1] = True
-problem = WayPointsProblem(grid, (0, 3), (7, 3))
-directions, cost = aStarSearch(problem)
-print("Directions: ", directions)
-print("Smoothed Directions: ", smooth(directions, problem))
-print("Cost: ", cost)
