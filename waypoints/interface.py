@@ -18,7 +18,7 @@ def getObstacles(cookie):
     obstacles = requests.get(IP+"/api/obstacles", headers={'cookie': cookie}) 
     return obstacles.json()['stationary_obstacles']
 
-def fillGrid(grid, boundary, obstacles):
+def fillGrid(grid, boundary):
     '''
     fill the grid with true and false
     '''
@@ -85,8 +85,8 @@ for i in range(len(grid)):
         print('*' if grid[i][j] else '-', end=' ')
     print(" ")
 '''
-grid = [[False for i in range(10)] for j in range(10)]
-grid = fillGrid(grid, [(1, 2), (4, 7), (8, 2)])
+grid = [[False for i in range(50)] for j in range(50)]
+grid = fillGrid(grid, [(1, 2), (25, 40), (48, 2)])
 for i in range(len(grid[0]) - 1, 0, -1):
     for j in range(len(grid)):
         print('*' if grid[j][i] else '-', end=' ')
