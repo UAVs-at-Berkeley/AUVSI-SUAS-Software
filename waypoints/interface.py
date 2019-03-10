@@ -56,7 +56,7 @@ def fillGrid(grid, boundary, obstacles=None):
                 k2 = int(math.sqrt(i[3] * i[3] * (1 - (x - i[0]) * (x - i[0]) / i[2] / i[2]))) + i[1] + 1
                 for y in range(k1, k2 + 1):
                     if(x >= 0 and x < len(grid) and y >= 0 and y < len(grid[0])):
-                        grid[x][y] = True;
+                        grid[x][y] = i[4];
     return grid
             
 
@@ -77,22 +77,27 @@ def scaleBoundary():
     for i in coordinates:
         scaledCoordinates.append((int(i[0] - xmin), int(i[1] - ymin)))
     
-    def convert(coordinates, type_to_convert_to):
+    def convert(coordinates, type_to_convert_to=None):
         if type_to_convert_to == 'scaled':
             #converts (latitude, longitude) to scaled coordinates
             return (int(coordinates[1] * (1e5) - xmin), int(coordinates[0] * (1e5) - ymin))
         else:
             #converts scaled coordinates = (latitude, longitude)
-            return (coordinates[1] / (1e5) + ymin, coordinates[0] / (1e5) + xmin)
+            return ((coordinates[1] + ymin) / (1e5), (coordinates[0] + xmin) / (1e5))
     return scaledCoordinates, convert
 
 def scaleObstacles(convert):
-    obstacles = getObstacles(getCookie())
-    scaledObstacles = []
-    for i in obstacles:
-        a = convert((i[0], i[1]), 'scaled')
-        scaledObstacles.append((a[0], a[1], i[2]/2.882, i[2]/3.64, i[3]))
-    return scaledObstacles
+    scaledObstacles = None
+    def scale():
+        obstacles = getObstacles(getCookie())
+        for i in obstacles:
+            a = convert((i[0], i[1]), 'scaled')
+            scaledObstacles.append((a[0], a[1], i[2]/2.882, i[2]/3.64, i[3]))
+        return scaledObstacles.sort(key = lambda 0: o[4])
+    if scaledObstacles is None:
+        return scale()
+    return scaledObstacles;
+    
     
 
 def createGrid():
@@ -111,17 +116,24 @@ def createGrid():
 
 
 grid, convert = createGrid()
-a = WayPointsProblem(grid, (800, 10), (1, 71))
-print(smooth(aStarSearch(a)[0], a))
+for i in range(len(grid[0]) - 1, 0, -1):
+    for j in range(len(grid)):
+        if grid[j][i] > 1:
+            print('*' if grid[j][i] == True else '-' if grid[j][i] == False else grid[j][i], end=' ')
+a = WayPointsProblem(grid, (800, 10, 0), (1, 71, 0), scaleObstacles(convert))
+k = smooth(aStarSearch(a)[0], a)
+print([convert(i) for i in k])
+
 
 '''
 grid = [[True for i in range(50)] for j in range(50)]
 grid = fillGrid(grid, [(1, 2), (25, 40), (48, 2)], [(20, 20, 6, 6, 5), (30, 8, 3, 3, 300)])
 for i in range(len(grid[0]) - 1, 0, -1):
     for j in range(len(grid)):
-        print('*' if grid[j][i] else '-', end=' ')
+        print('*' if grid[j][i] == True else '-' if grid[j][i] == False else grid[j][i], end=' ')
     print(" ")
 print(" ")
-a = WayPointsProblem(grid, (10, 10), (25, 40))
+a = WayPointsProblem(grid, (10, 10, 0), (25, 40, 0), obstacles)
 print(smooth(aStarSearch(a)[0], a))
 '''
+

@@ -2,10 +2,14 @@ from queue import PriorityQueue
 import math
 
 class WayPointsProblem:
-    def __init__(self, inputGrid, startPos, goalPos):
+    def __init__(self, inputGrid, startPos, goalPos, cylinders):
         self.grid = inputGrid
-        self.start = startPos
-        self.goal = goalPos
+        self.start = (startPos[0], startPos[1])
+        self.startAlt = startPos[2]
+        self.goal = (goalPos[0], goalPos[1])
+        self.goalAlt = startPos[2]
+        self.obstacles = [i for i in cylinders if i[4] > startAlt]
+
         
     def getStartState(self):
         '''state is (x, y, cost, (x_direction, y_direction))'''
@@ -38,7 +42,7 @@ class WayPointsProblem:
     def obstacle(self, x, y):
         if not self.valid(x, y):
             return True;
-        return self.grid[x][y]
+        return self.grid[x][y] > 0 and (self.grid[x][y] == 1 or self.grid[x][y] > startAlt)
 
     def search_horizontal(self, state, hdir): 
         x, y, cost, direction = state
@@ -151,3 +155,22 @@ def smooth(path, problem):
         
     return waypoints
 
+def dist(p1, p2):
+    return math.sqrt((p1[0] - p2[0]) * (p1[0] - p2[0]) + (p1[1] - p2[1]) * (p1[1] - p2[1]))
+
+def intersect(ellipse, point1, point2):
+    x, y, r1, r2 = ellipse
+    x0, y0 = point1
+    x1, y1 = point2
+    m = (y1 - y0) / (x1 - x0)
+    a = (r2 * r2 + r1 *r1 * m * m) / (r1 * r1 * r2 * r2)
+    b = (2 * m * y0 - 2 * m * m * x0) / r2
+    c = (y0 * y0 - 2 * y0 * m * x0 + m * m * x0 * x0) / (r2 * r2) - 1
+    discriminant = b * b - 4 * a * c
+    if discriminant < 0:
+        return None
+    xans0 = (-b + math.sqrt(discriminant)) / (2 * a)
+    xans1 =  (-b - math.sqrt(discriminant)) / (2 * a)
+    yans0 = (xans0 - x0) * m + y0
+    yans1 = (xans1 - x0) * m + y0
+    return min([(xans0, yans0), (xans1, yans1)], key = lambda p: dist(p, (x0, y0)))
