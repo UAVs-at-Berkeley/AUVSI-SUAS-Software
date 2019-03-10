@@ -4,8 +4,9 @@ Currently, the waypoints software for the drone consists of two files: interface
 ## Getting the data (interface.py)
 ### How to run:
 1.  grid, convert = createGrid()
-    the createGrid() method take boundary and obstacle data from the Interop server and creates a two    dimensional grid of booleans indicating where there is an obstacle or a position is invalid. The     latitude and longitude points of the boundary are scaled so to (x, y) coordinates (note that         x corresponds to longitude and y corresponds to latitude). 
-    convert(coordinates, type_to_convert_to) is a method that converts latitude and longitude to the     scaled coordinates if type_to_convert_to = 'scaled' and converts scaled coordinates to latitude t    o longitude if type_to_convert_to = 'not scaled'
+    the createGrid() method takes boundary and obstacle data from the Interop server and creates a two dimensional grid of booleans indicating where there is an obstacle or a position is invalid.   
+    The latitude and longitude points of the boundary are scaled so to (x, y) coordinates (note that x corresponds to longitude and y corresponds to latitude).   
+    convert(coordinates, type_to_convert_to) is a method that converts latitude and longitude to the scaled coordinates if type_to_convert_to = 'scaled' and converts scaled coordinates to latitude to longitude if type_to_convert_to = 'not scaled'  
 2.  obstacles = scaledObstacles(convert)
     This method gives a sorted list of obstacles needed for the search problem
 3.  After creating a grid and getting the obstacles, we can run a pathing algorithm to find the short    est path between the start and end points.
