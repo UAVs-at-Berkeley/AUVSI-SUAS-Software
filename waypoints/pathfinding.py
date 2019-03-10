@@ -7,8 +7,8 @@ class WayPointsProblem:
         self.start = (startPos[0], startPos[1])
         self.startAlt = startPos[2]
         self.goal = (goalPos[0], goalPos[1])
-        self.goalAlt = startPos[2]
-        self.obstacles = [i for i in cylinders if i[4] > startAlt]
+        self.goalAlt = goalPos[2]
+        self.obstacles = [i for i in cylinders if i[4] > self.startAlt]
 
         
     def getStartState(self):
@@ -42,7 +42,7 @@ class WayPointsProblem:
     def obstacle(self, x, y):
         if not self.valid(x, y):
             return True;
-        return self.grid[x][y] > 0 and (self.grid[x][y] == 1 or self.grid[x][y] > startAlt)
+        return self.grid[x][y] > 0 and (self.grid[x][y] == 1 or self.grid[x][y] > self.startAlt)
 
     def search_horizontal(self, state, hdir): 
         x, y, cost, direction = state
@@ -119,6 +119,9 @@ def aStarSearch(problem):
     return ([], -1)
 
 def smooth(path, problem):
+    if len(path) < 2:
+        print('ERROR: Path must have at least 2 points for smoothing to work!')
+        return None
     waypoints = [(path[0][0], path[0][1])]
     for i in range(len(path) - 1):
         x0, y0, x1, y1 = path[i][0], path[i][1], path[i + 1][0], path[i + 1][1]
@@ -149,28 +152,69 @@ def smooth(path, problem):
             smoothedPoints[i + 1] = None
     
     waypoints = []
+    prev, totalDistance = None, 0
     for i in smoothedPoints:
         if i is not None:
+            if prev is not None:
+                totalDistance += dist(prev, i)
+            prev = i
             waypoints.append(i)
-        
-    return waypoints
+    
+    altitudePoints = [(waypoints[0][0], waypoints[0][1], problem.startAlt)]   
+    
+    partialDistance = problem.startAlt
+    for i in range(1, len(waypoints)):
+        partialDistance += (problem.goalAlt - problem.startAlt) / totalDistance * dist(waypoints[i-1], waypoints[i])
+        altitudePoints.append((waypoints[i][0], waypoints[i][1], partialDistance))
+
+    return altitudeSmooth(altitudePoints, problem)
 
 def dist(p1, p2):
     return math.sqrt((p1[0] - p2[0]) * (p1[0] - p2[0]) + (p1[1] - p2[1]) * (p1[1] - p2[1]))
 
 def intersect(ellipse, point1, point2):
-    x, y, r1, r2 = ellipse
-    x0, y0 = point1
-    x1, y1 = point2
+    h, k, a, b, altitude = ellipse
+    x0, y0, altitude0 = point1
+    x1, y1, altitude1 = point2
     m = (y1 - y0) / (x1 - x0)
-    a = (r2 * r2 + r1 *r1 * m * m) / (r1 * r1 * r2 * r2)
-    b = (2 * m * y0 - 2 * m * m * x0) / r2
-    c = (y0 * y0 - 2 * y0 * m * x0 + m * m * x0 * x0) / (r2 * r2) - 1
-    discriminant = b * b - 4 * a * c
+    c = y0 - m * x0
+    epsilon = c - k
+    delta = c + m * h
+    discriminant = a*a + m*m + b*b - delta * delta - k * k + 2 * delta * k
     if discriminant < 0:
-        return None
-    xans0 = (-b + math.sqrt(discriminant)) / (2 * a)
-    xans1 =  (-b - math.sqrt(discriminant)) / (2 * a)
+        return False
+    xans0 = (h*b*b - m*a*a*epsilon + a*b*math.sqrt(discriminant)) / (a*a*m*m + b*b)
+    xans1 = (h*b*b - m*a*a*epsilon - a*b*math.sqrt(discriminant)) / (a*a*m*m + b*b)
     yans0 = (xans0 - x0) * m + y0
     yans1 = (xans1 - x0) * m + y0
-    return min([(xans0, yans0), (xans1, yans1)], key = lambda p: dist(p, (x0, y0)))
+    ansCoords = []
+    if xans0 >= min(x0, x1) and xans0 <= max(x0, x1):
+        ansCoords.append((xans0, yans0))
+    if xans1 >= min(x0, x1) and xans1 <= max(x0, x1):
+        ansCoords.append((xans1, yans1))
+    if ansCoords == []:
+        return False
+    if altitude0 < altitude1:
+        point = min(ansCoords, key = lambda p: dist(p, (x0, y0)))
+    else:
+        point = min(ansCoords, key = lambda p: dist(p, (x1, y1))) 
+    if (altitude1 - altitude0) / dist((x0, y0), (x1, y1)) * dist((x0, y0), point) + altitude0 <= altitude:
+        return True
+    return False
+
+def altitudeSmooth(altitudePoints, problem):
+    smoothPoints = [altitudePoints[0]]
+    i = 0
+    while (i < len(altitudePoints) - 1):
+        for j in range(len(altitudePoints) - 1, i, -1):
+            #there is guaranteed to be a valid j that is greater than i, namely i + 1
+            valid = True
+            for k in problem.obstacles:
+                if intersect(k, altitudePoints[i], altitudePoints[j]):
+                    valid = False
+            if valid:
+                smoothPoints.append(altitudePoints[j])
+                i = j
+                break;
+    return smoothPoints
+

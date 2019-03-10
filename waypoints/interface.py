@@ -87,17 +87,13 @@ def scaleBoundary():
     return scaledCoordinates, convert
 
 def scaleObstacles(convert):
-    scaledObstacles = None
-    def scale():
-        obstacles = getObstacles(getCookie())
-        for i in obstacles:
-            a = convert((i[0], i[1]), 'scaled')
-            scaledObstacles.append((a[0], a[1], i[2]/2.882, i[2]/3.64, i[3]))
-        return scaledObstacles.sort(key = lambda 0: o[4])
-    if scaledObstacles is None:
-        return scale()
-    return scaledObstacles;
-    
+    scaledObstacles = []
+    obstacles = getObstacles(getCookie())
+    for i in obstacles:
+        a = convert((i[0], i[1]), 'scaled')
+        scaledObstacles.append((a[0], a[1], i[2]/2.87615, i[2]/3.64170, i[3]))
+    scaledObstacles.sort(key = lambda o: o[4])
+    return scaledObstacles
     
 
 def createGrid():
@@ -110,16 +106,11 @@ def createGrid():
     ysize = max([i[1] for i in boundaryPoints]) + 100
     grid = [[True for i in range(ysize)] for j in range(xsize)]
     obstacles = scaleObstacles(convert)
-    #print(boundaryPoints, len(grid))
     return fillGrid(grid, boundaryPoints, obstacles), convert
 
 
 
 grid, convert = createGrid()
-for i in range(len(grid[0]) - 1, 0, -1):
-    for j in range(len(grid)):
-        if grid[j][i] > 1:
-            print('*' if grid[j][i] == True else '-' if grid[j][i] == False else grid[j][i], end=' ')
 a = WayPointsProblem(grid, (800, 10, 0), (1, 71, 0), scaleObstacles(convert))
 k = smooth(aStarSearch(a)[0], a)
 print([convert(i) for i in k])
@@ -127,13 +118,13 @@ print([convert(i) for i in k])
 
 '''
 grid = [[True for i in range(50)] for j in range(50)]
-grid = fillGrid(grid, [(1, 2), (25, 40), (48, 2)], [(20, 20, 6, 6, 5), (30, 8, 3, 3, 300)])
+grid = fillGrid(grid, [(1, 2), (25, 40), (48, 2)], [(25, 14, 4, 4, 200)])
 for i in range(len(grid[0]) - 1, 0, -1):
     for j in range(len(grid)):
-        print('*' if grid[j][i] == True else '-' if grid[j][i] == False else grid[j][i], end=' ')
+        print('*' if grid[j][i] > 0 else '-', end=' ')
     print(" ")
 print(" ")
-a = WayPointsProblem(grid, (10, 10, 0), (25, 40, 0), obstacles)
+a = WayPointsProblem(grid, (10, 14, 100), (40, 14, 100), [(25, 14, 4, 4, 200)])
 print(smooth(aStarSearch(a)[0], a))
 '''
 
