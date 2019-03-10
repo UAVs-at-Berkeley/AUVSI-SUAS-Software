@@ -1,4 +1,4 @@
-#Waypoints Software for AUVSI Drone
+# Waypoints Software for AUVSI Drone  
 Currently, the waypoints software for the drone consists of two files: interface.py and pathing.py (although this is subject to change). The interface.py file is responsible for communicating with the Interop server to get data on the boundary, waypoints, and obstacles. 
 
 ## Getting the data (interface.py)
