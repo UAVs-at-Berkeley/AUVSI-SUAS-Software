@@ -38,7 +38,7 @@ The smoothing algorithm not only smooths the path, but potentially makes it shor
 
 After being given a smoothed path, the method altitudeSmooth(altitudePoints, problem) is called. This method looks at each pair of points in the path and sees if a drone can cross through an "obstacle" that it thought was once there given it uniformly increases in altitude. This allows the path to be shorter than it was before.
 
-## Example:
+# Example:
 grid, convert = createGrid()  
 a = WayPointsProblem(grid, (800, 10, 0), (1, 71, 0), scaleObstacles(convert))  
 k = smooth(aStarSearch(a)[0], a)  
