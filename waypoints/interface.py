@@ -109,12 +109,12 @@ def createGrid():
     return fillGrid(grid, boundaryPoints, obstacles), convert
 
 
-
+'''
 grid, convert = createGrid()
 a = WayPointsProblem(grid, (800, 10, 0), (1, 71, 0), scaleObstacles(convert))
 k = smooth(aStarSearch(a)[0], a)
 print([convert(i) for i in k])
-
+'''
 
 '''
 grid = [[True for i in range(50)] for j in range(50)]

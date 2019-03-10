@@ -8,7 +8,7 @@ class WayPointsProblem:
         self.startAlt = startPos[2]
         self.goal = (goalPos[0], goalPos[1])
         self.goalAlt = goalPos[2]
-        self.obstacles = [i for i in cylinders if i[4] > self.startAlt]
+        self.obstacles = [i for i in cylinders if i[4] > min(self.startAlt, self.goalAlt)]
 
         
     def getStartState(self):
