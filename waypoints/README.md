@@ -38,12 +38,12 @@ The smoothing algorithm not only smooths the path, but potentially makes it shor
 
 After being given a smoothed path, the method altitudeSmooth(altitudePoints, problem) is called. This method looks at each pair of points in the path and sees if a drone can cross through an "obstacle" that it thought was once there given it uniformly increases in altitude. This allows the path to be shorter than it was before.
 
-# Example:
+## Example:
 grid, convert = createGrid()  
 a = WayPointsProblem(grid, (800, 10, 0), (1, 71, 0), scaleObstacles(convert))  
 k = smooth(aStarSearch(a)[0], a)  
 print([convert(i) for i in k])  
 
-# Potential Errors
+## Potential Errors
 1. One degree of latitude and longitude differs given the coordinates of the drone. This causes conversion from feet for the radius of each cylinder into latitude and longitude to have some error. (Note that because one degree latitude is not the same as 1 degree longitude, the cylinder obstacles are now ellipses.
 2. Given the margin of error of the GPS, we may need to add some buffer length to the radius of each obstacle to absolutely ensure that the drone will not collide with an obstacle. This needs to be done with testing.
