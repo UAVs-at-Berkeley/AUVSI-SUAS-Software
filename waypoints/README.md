@@ -1,11 +1,12 @@
-#Waypoints Software for AUVSI Drone
+# Waypoints Software for AUVSI Drone  
 Currently, the waypoints software for the drone consists of two files: interface.py and pathing.py (although this is subject to change). The interface.py file is responsible for communicating with the Interop server to get data on the boundary, waypoints, and obstacles. 
 
 ## Getting the data (interface.py)
 ### How to run:
 1.  grid, convert = createGrid()
-    the createGrid() method take boundary and obstacle data from the Interop server and creates a two    dimensional grid of booleans indicating where there is an obstacle or a position is invalid. The     latitude and longitude points of the boundary are scaled so to (x, y) coordinates (note that         x corresponds to longitude and y corresponds to latitude). 
-    convert(coordinates, type_to_convert_to) is a method that converts latitude and longitude to the     scaled coordinates if type_to_convert_to = 'scaled' and converts scaled coordinates to latitude t    o longitude if type_to_convert_to = 'not scaled'
+    the createGrid() method takes boundary and obstacle data from the Interop server and creates a two dimensional grid of booleans indicating where there is an obstacle or a position is invalid.   
+    The latitude and longitude points of the boundary are scaled so to (x, y) coordinates (note that x corresponds to longitude and y corresponds to latitude).   
+    convert(coordinates, type_to_convert_to) is a method that converts latitude and longitude to the scaled coordinates if type_to_convert_to = 'scaled' and converts scaled coordinates to latitude to longitude if type_to_convert_to = 'not scaled'  
 2.  obstacles = scaledObstacles(convert)
     This method gives a sorted list of obstacles needed for the search problem
 3.  After creating a grid and getting the obstacles, we can run a pathing algorithm to find the short    est path between the start and end points.
@@ -39,11 +40,11 @@ The smoothing algorithm not only smooths the path, but potentially makes it shor
 After being given a smoothed path, the method altitudeSmooth(altitudePoints, problem) is called. This method looks at each pair of points in the path and sees if a drone can cross through an "obstacle" that it thought was once there given it uniformly increases in altitude. This allows the path to be shorter than it was before.
 
 ## Example:
-grid, convert = createGrid()
-a = WayPointsProblem(grid, (800, 10, 0), (1, 71, 0), scaleObstacles(convert))
-k = smooth(aStarSearch(a)[0], a)
-print([convert(i) for i in k])
+grid, convert = createGrid()  
+a = WayPointsProblem(grid, (800, 10, 0), (1, 71, 0), scaleObstacles(convert))  
+k = smooth(aStarSearch(a)[0], a)  
+print([convert(i) for i in k])  
 
-### Potential Error
+## Potential Errors
 1. One degree of latitude and longitude differs given the coordinates of the drone. This causes conversion from feet for the radius of each cylinder into latitude and longitude to have some error. (Note that because one degree latitude is not the same as 1 degree longitude, the cylinder obstacles are now ellipses.
 2. Given the margin of error of the GPS, we may need to add some buffer length to the radius of each obstacle to absolutely ensure that the drone will not collide with an obstacle. This needs to be done with testing.
