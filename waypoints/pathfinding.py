@@ -12,7 +12,10 @@ class WayPointsProblem:
 
         
     def getStartState(self):
-        '''state is (x, y, cost, (x_direction, y_direction))'''
+        '''
+        Gets the starting state for the search
+        state is (x, y, cost, (x_direction, y_direction))
+        '''
         if not self.valid(self.start[0], self.start[1]):
             print("ERROR: Start state is not valid!")
         if not self.valid(self.goal[0], self.goal[1]): 
@@ -28,6 +31,9 @@ class WayPointsProblem:
         return x >= 0 and x < len(self.grid) and y >= 0 and y < len(self.grid[0])  
 
     def getSuccessors(self, state):
+        '''
+        Gets the successors of the search problem with constraints added by jump point search
+        '''
         x, y, cost, direction = state
         next_diagonal = []
         if self.valid(x, y) and not self.obstacle(x + direction[0], y + direction[1]):
@@ -40,11 +46,17 @@ class WayPointsProblem:
         return self.search_horizontal(state, direction[0]) + self.search_vertical(state, direction[1]) + next_diagonal
           
     def obstacle(self, x, y):
+        '''
+        Determines if there is an obstacle at a specific point
+        '''
         if not self.valid(x, y):
             return True;
         return self.grid[x][y] > 0 and (self.grid[x][y] == 1 or self.grid[x][y] > self.startAlt)
 
     def search_horizontal(self, state, hdir): 
+        '''
+        jump point search horizontal search
+        '''
         x, y, cost, direction = state
         nodes = [];
         a = []
@@ -68,6 +80,9 @@ class WayPointsProblem:
         return nodes
 
     def search_vertical(self, state, vdir): 
+        '''
+        jump point search vertical search
+        '''
         x, y, cost, direction = state
         nodes = [];
 
@@ -89,10 +104,16 @@ class WayPointsProblem:
         return nodes
 
     def isGoalState(self, state):
+        '''
+        checks if we found out goal
+        '''
         x, y, cost, direction = state
         return x == self.goal[0] and y == self.goal[1] 
  
     def heuristic(self, state):
+        '''
+        heuristic for A-star
+        '''
         x, y, cost, direction = state
         return math.sqrt((self.goal[0] - x) * (self.goal[0] - x) + (self.goal[1] - y) * (self.goal[1] - y))
 
@@ -119,6 +140,10 @@ def aStarSearch(problem):
     return ([], -1)
 
 def smooth(path, problem):
+    '''
+    takes a path found by jump point search and smooths it  
+    '''
+
     if len(path) < 2:
         print('ERROR: Path must have at least 2 points for smoothing to work!')
         return None
@@ -173,6 +198,10 @@ def dist(p1, p2):
     return math.sqrt((p1[0] - p2[0]) * (p1[0] - p2[0]) + (p1[1] - p2[1]) * (p1[1] - p2[1]))
 
 def intersect(ellipse, point1, point2):
+    '''
+    checks if a line between two points intersects an ellipse 
+    assumes we are uniformly increasing the altitude
+    '''
     h, k, a, b, altitude = ellipse
     x0, y0, altitude0 = point1
     x1, y1, altitude1 = point2
@@ -203,6 +232,9 @@ def intersect(ellipse, point1, point2):
     return False
 
 def altitudeSmooth(altitudePoints, problem):
+    '''
+    shortens the path by not considering some obstacles that are not present at a specific altitude
+    '''
     smoothPoints = [altitudePoints[0]]
     i = 0
     while (i < len(altitudePoints) - 1):

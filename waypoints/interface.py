@@ -4,25 +4,36 @@ from pathfinding import *
 IP = "http://localhost:8000"
 
 def getCookie():
-    r = requests.post(IP+"/api/login", json={"username": "testadmin", "password": "testpass"}, headers={'content-type': 'application/json'})
+    r = requests.post(IP+"/api/login", json={"username": "testuser", "password": "testpass"}, headers={'content-type': 'application/json'})
     return r.headers["Set-Cookie"].split()[0][:-1]
 
 def getMissionData(cookie):
-    return requests.get(IP+"/api/missions", headers={'cookie': cookie}).json()
+    return requests.get(IP+"/api/missions", headers={'cookie': cookie}).json()[0]
 
 def getObstacles(cookie):
-    '''returns a list of dictionaries
+    '''
+    returns a list of dictionaries
         latitude
         longitude
         cylinder_radius
-        cylinder_height'''
+        cylinder_height
+    '''
     r = requests.get(IP+"/api/obstacles", headers={'cookie': cookie}) 
     data = r.json()['stationary_obstacles']
     obstacles = []
     for i in data:
         obstacles.append((i['latitude'], i['longitude'], i['cylinder_radius'], i['cylinder_height']))
     return obstacles
-    
+   
+def getWayPoints(cookie):
+    '''
+    returns a list of waypoints (latitude, longitude, altitude) for a mission
+    '''
+    data = getMissionData(cookie)['mission_waypoints']
+    waypoints = []
+    for i in data:
+        waypoints.append((i['latitude'], i['longitude'], i['altitude_msl']))
+    return waypoints    
 
 def fillGrid(grid, boundary, obstacles=None):
     '''
@@ -42,7 +53,10 @@ def fillGrid(grid, boundary, obstacles=None):
                 if fillstart == -1:
                     fillstart = y
                 else:
-                    fillend = y 
+                    fillend = y
+        if fillstart != 0:
+            fillstart -= 1
+        fillend += 1 
         for y in range(fillstart, fillend):
             grid[x][y] = False
 
@@ -65,7 +79,7 @@ def scaleBoundary():
     Returns a list of scaled boundary coordinates and a function convert(coordinates, type_to_convert_to)
     to convert to and from the scaled boundary coordinates
     '''
-    r = getMissionData(getCookie())[0]['fly_zones']
+    r = getMissionData(getCookie())['fly_zones']
     boundaryPoints = [r[x]['boundary_pts'] for x in range(len(r))]
     scaledCoordinates, coordinates, xcoords, ycoords = [], [], [], []
     for zone in boundaryPoints:
@@ -80,13 +94,22 @@ def scaleBoundary():
     def convert(coordinates, type_to_convert_to=None):
         if type_to_convert_to == 'scaled':
             #converts (latitude, longitude) to scaled coordinates
-            return (int(coordinates[1] * (1e5) - xmin), int(coordinates[0] * (1e5) - ymin))
+            first = int(coordinates[1] * (1e5) - xmin)
+            second = int(coordinates[0] * (1e5) - ymin) 
         else:
             #converts scaled coordinates = (latitude, longitude)
-            return ((coordinates[1] + ymin) / (1e5), (coordinates[0] + xmin) / (1e5))
+            first = (coordinates[1] + ymin) / (1e5)
+            second = (coordinates[0] + xmin) / (1e5)
+        if len(coordinates) == 2:
+            return (first, second)
+        else:
+            return (first, second, coordinates[2])
     return scaledCoordinates, convert
 
 def scaleObstacles(convert):
+    '''
+    Converts obstacles in (latitude, longitude, altitude) to (x, y, major axis, minor axis, altitude (feet))
+    '''
     scaledObstacles = []
     obstacles = getObstacles(getCookie())
     for i in obstacles:
@@ -111,7 +134,7 @@ def createGrid():
 
 '''
 grid, convert = createGrid()
-a = WayPointsProblem(grid, (800, 10, 0), (1, 71, 0), scaleObstacles(convert))
+a = WayPointsProblem(grid, (800, 10, 0), convert((38.142544, -76.434088, 200), 'scaled') , scaleObstacles(convert))
 k = smooth(aStarSearch(a)[0], a)
 print([convert(i) for i in k])
 '''
