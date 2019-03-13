@@ -44,21 +44,25 @@ def fillGrid(grid, boundary, obstacles=None):
         endx, endy = boundary[(i + 1) % len(boundary)]
         diff = (endx - startx) // abs(endx - startx)
         for j in range(startx, endx + diff, diff):
-            grid[j][starty + int((endy - starty) / (endx - startx) * (j - startx))] = False;
+            grid[j][starty + int((endy - starty) / (endx - startx) * (j - startx))] += 1;
     
+
     for x in range(len(grid)):
         fillstart, fillend = -1, -1;
+        print(x, len(grid[x]))
         for y in range(len(grid[x])):
-            if not grid[x][y]:
+            if grid[x][y] > 1:
                 if fillstart == -1:
                     fillstart = y
                 else:
                     fillend = y
-        if fillstart != 0:
-            fillstart -= 1
-        fillend += 1 
-        for y in range(fillstart, fillend):
-            grid[x][y] = False
+        
+        counter = 1
+        for y in range(fillstart + 1, fillend):
+            counter = (counter + grid[x][y] - 1) % 2
+            grid[x][y] = True if counter == 0 else False
+        grid[x][fillstart] = False
+        grid[x][fillend] = False
 
     if(obstacles is None):
         return grid
@@ -139,7 +143,7 @@ k = smooth(aStarSearch(a)[0], a)
 print([convert(i) for i in k])
 '''
 
-'''
+
 grid = [[True for i in range(50)] for j in range(50)]
 grid = fillGrid(grid, [(1, 2), (25, 40), (48, 2)], [(25, 14, 4, 4, 200)])
 for i in range(len(grid[0]) - 1, 0, -1):
@@ -149,5 +153,5 @@ for i in range(len(grid[0]) - 1, 0, -1):
 print(" ")
 a = WayPointsProblem(grid, (10, 14, 100), (40, 14, 100), [(25, 14, 4, 4, 200)])
 print(smooth(aStarSearch(a)[0], a))
-'''
+
 
