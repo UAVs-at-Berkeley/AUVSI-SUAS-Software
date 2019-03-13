@@ -35,6 +35,13 @@ def getWayPoints(cookie):
         waypoints.append((i['latitude'], i['longitude'], i['altitude_msl']))
     return waypoints    
 
+def getHomePos(cookie):
+    '''
+    gets the home position for a mission
+    '''
+    pos = getMissionData(cookie)['home_pos']
+    return (pos['latitude'], pos['longitude'], 0)
+
 def fillGrid(grid, boundary, obstacles=None):
     '''
     fill the grid with true and false
@@ -49,7 +56,7 @@ def fillGrid(grid, boundary, obstacles=None):
 
     for x in range(len(grid)):
         fillstart, fillend = -1, -1;
-        print(x, len(grid[x]))
+
         for y in range(len(grid[x])):
             if grid[x][y] > 1:
                 if fillstart == -1:
@@ -138,12 +145,17 @@ def createGrid():
 
 '''
 grid, convert = createGrid()
+for i in range(len(grid[0]) - 1, 0, -10):
+    for j in range(0, len(grid), 10):
+        print('*' if grid[j][i] > 0 else '-', end=' ')
+    print(" ")
+print(" ")
 a = WayPointsProblem(grid, (800, 10, 0), convert((38.142544, -76.434088, 200), 'scaled') , scaleObstacles(convert))
 k = smooth(aStarSearch(a)[0], a)
 print([convert(i) for i in k])
 '''
 
-
+'''
 grid = [[True for i in range(50)] for j in range(50)]
 grid = fillGrid(grid, [(1, 2), (25, 40), (48, 2)], [(25, 14, 4, 4, 200)])
 for i in range(len(grid[0]) - 1, 0, -1):
@@ -153,5 +165,5 @@ for i in range(len(grid[0]) - 1, 0, -1):
 print(" ")
 a = WayPointsProblem(grid, (10, 14, 100), (40, 14, 100), [(25, 14, 4, 4, 200)])
 print(smooth(aStarSearch(a)[0], a))
-
+'''
 
