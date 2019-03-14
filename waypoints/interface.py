@@ -2,15 +2,21 @@ import requests
 import math
 from pathfinding import *
 IP = "http://localhost:8000"
+readFromFile = False
 
 def getCookie():
     r = requests.post(IP+"/api/login", json={"username": "testuser", "password": "testpass"}, headers={'content-type': 'application/json'})
     return r.headers["Set-Cookie"].split()[0][:-1]
 
-def getMissionData(cookie):
+def getMissionData(cookie, readFromFile = False):
+    if readFromFile:
+        f = open("WaypointsData.txt", "r")
+        data = eval(f.readline())
+        f.close()
+        return data
     return requests.get(IP+"/api/missions", headers={'cookie': cookie}).json()[0]
 
-def getObstacles(cookie):
+def getObstacles(cookie, readFromFile = False):
     '''
     returns a list of dictionaries
         latitude
@@ -18,6 +24,13 @@ def getObstacles(cookie):
         cylinder_radius
         cylinder_height
     '''
+    if readFromFile:
+        f = open("WaypointsData.txt", "r")
+        f.readline()
+        data = eval(f.readline())
+        f.close()
+        return data
+        
     r = requests.get(IP+"/api/obstacles", headers={'cookie': cookie}) 
     data = r.json()['stationary_obstacles']
     obstacles = []
@@ -25,21 +38,21 @@ def getObstacles(cookie):
         obstacles.append((i['latitude'], i['longitude'], i['cylinder_radius'], i['cylinder_height']))
     return obstacles
    
-def getWayPoints(cookie):
+def getWayPoints(cookie, readFromFile = False):
     '''
     returns a list of waypoints (latitude, longitude, altitude) for a mission
     '''
-    data = getMissionData(cookie)['mission_waypoints']
+    data = getMissionData(cookie, readFromFile)['mission_waypoints']
     waypoints = []
     for i in data:
         waypoints.append((i['latitude'], i['longitude'], i['altitude_msl']))
     return waypoints    
 
-def getHomePos(cookie):
+def getHomePos(cookie, readFromFile = False):
     '''
     gets the home position for a mission
     '''
-    pos = getMissionData(cookie)['home_pos']
+    pos = getMissionData(cookie, readFromFile)['home_pos']
     return (pos['latitude'], pos['longitude'], 0)
 
 def fillGrid(grid, boundary, obstacles=None):
@@ -51,13 +64,15 @@ def fillGrid(grid, boundary, obstacles=None):
         endx, endy = boundary[(i + 1) % len(boundary)]
         diff = (endx - startx) // abs(endx - startx)
         for j in range(startx, endx + diff, diff):
-            grid[j][starty + int((endy - starty) / (endx - startx) * (j - startx))] += 1;
+            grid[j][starty + (endy - starty) * (j - startx) // (endx - startx)] += 1;
 
+   
     for i in range(len(boundary)):
         xF = boundary[(i+1) % len(boundary)][0]
         xP = boundary[len(boundary) - 1 if i == 0 else i-1][0]
         if (xF - boundary[i][0]) / abs(xF - boundary[i][0]) == (boundary[i][0] - xP) / abs(boundary[i][0] - xP):
             grid[boundary[i][0]][boundary[i][1]] -= 1
+    
 
     for x in range(len(grid)):
         counter = 0
@@ -84,12 +99,12 @@ def fillGrid(grid, boundary, obstacles=None):
     return grid
             
 
-def scaleBoundary():
+def scaleBoundary(readFromFile = False):
     '''
     Returns a list of scaled boundary coordinates and a function convert(coordinates, type_to_convert_to)
     to convert to and from the scaled boundary coordinates
     '''
-    r = getMissionData(getCookie())['fly_zones']
+    r = getMissionData(getCookie(), readFromFile)['fly_zones']
     boundaryPoints = [r[x]['boundary_pts'] for x in range(len(r))]
     scaledCoordinates, coordinates, xcoords, ycoords = [], [], [], []
     for zone in boundaryPoints:
@@ -116,12 +131,13 @@ def scaleBoundary():
             return (first, second, coordinates[2])
     return scaledCoordinates, convert
 
-def scaleObstacles(convert):
+
+def scaleObstacles(convert, readFromFile = False):
     '''
     Converts obstacles in (latitude, longitude, altitude) to (x, y, major axis, minor axis, altitude (feet))
     '''
     scaledObstacles = []
-    obstacles = getObstacles(getCookie())
+    obstacles = getObstacles(getCookie(), readFromFile)
     for i in obstacles:
         a = convert((i[0], i[1]), 'scaled')
         scaledObstacles.append((a[0], a[1], i[2]/2.87615, i[2]/3.64170, i[3]))
@@ -129,40 +145,39 @@ def scaleObstacles(convert):
     return scaledObstacles
     
 
-def createGrid():
+def createGrid(readFromFile = False):
     '''
     creates a grid[x][y] with true if there is a boundary or an obstacle and false otherwise
     returns the grid with a conversion function to convert latitude/longitude to scaled coordinates and vice versa
     '''
-    boundaryPoints, convert = scaleBoundary()
+    boundaryPoints, convert = scaleBoundary(readFromFile)
     xsize = max([i[0] for i in boundaryPoints]) + 100  #adding the extra constant value at the end acts as a buffer 
     ysize = max([i[1] for i in boundaryPoints]) + 100
     grid = [[True for i in range(ysize)] for j in range(xsize)]
-    obstacles = scaleObstacles(convert)
-    return fillGrid(grid, boundaryPoints, obstacles), convert
-
+    obstacles = scaleObstacles(convert, readFromFile)
+    return boundaryPoints, fillGrid(grid, boundaryPoints, obstacles), convert
 
 '''
-grid, convert = createGrid()
+boundaryPoints, grid, convert = createGrid()
 for i in range(len(grid[0]) - 1, 0, -10):
     for j in range(0, len(grid), 10):
         print('*' if grid[j][i] > 0 else '-', end=' ')
     print(" ")
 print(" ")
-a = WayPointsProblem(grid, (800, 10, 0), convert((38.142544, -76.434088, 200), 'scaled') , scaleObstacles(convert))
+a = WayPointsProblem(grid, (800, 10, 0), convert((38.142544, -76.434088, 200), 'scaled') , scaleObstacles(convert), boundaryPoints)
 k = smooth(aStarSearch(a)[0], a)
 print([convert(i) for i in k])
 '''
 
-
+'''
 grid = [[True for i in range(50)] for j in range(50)]
-grid = fillGrid(grid, [(2, 2), (15, 25), (2, 48), (25, 33), (48, 48), (33, 25), (48, 2), (25, 15)], [(25, 14, 4, 4, 200)])
+grid = fillGrid(grid, [(2, 2), (15, 25), (2, 48), (25, 33), (48, 48), (33, 25), (48, 2), (25, 15)], [(25, 25, 4, 4, 200)])
 for i in range(len(grid[0]) - 1, 0, -1):
     for j in range(len(grid)):
         print('*' if grid[j][i] > 0 else '-', end=' ')
     print(" ")
 print(" ")
-a = WayPointsProblem(grid, (10, 14, 100), (40, 14, 100), [(25, 14, 4, 4, 200)])
+a = WayPointsProblem(grid, (10, 14, 100), (40, 14, 100), [(25, 25, 4, 4, 200)],  [(2, 2), (15, 25), (2, 48), (25, 33), (48, 48), (33, 25), (48, 2), (25, 15)])
 print(smooth(aStarSearch(a)[0], a))
-
+'''
 

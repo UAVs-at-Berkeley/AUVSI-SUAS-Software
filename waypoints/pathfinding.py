@@ -2,14 +2,15 @@ from queue import PriorityQueue
 import math
 
 class WayPointsProblem:
-    def __init__(self, inputGrid, startPos, goalPos, cylinders):
+    def __init__(self, inputGrid, startPos, goalPos, cylinders, boundaryPoints):
         self.grid = inputGrid
         self.start = (startPos[0], startPos[1])
         self.startAlt = startPos[2]
         self.goal = (goalPos[0], goalPos[1])
         self.goalAlt = goalPos[2]
-        self.obstacles = [i for i in cylinders if i[4] > min(self.startAlt, self.goalAlt)]
-
+        self.obstacles = [i for i in cylinders if i[4] >= min(self.startAlt, self.goalAlt)]
+        self.boundary = boundaryPoints
+        #print(inputGrid[25][13])
         
     def getStartState(self):
         '''
@@ -185,13 +186,14 @@ def smooth(path, problem):
             prev = i
             waypoints.append(i)
     
-    altitudePoints = [(waypoints[0][0], waypoints[0][1], problem.startAlt)]   
+    altitudePoints = [(waypoints[0][0], waypoints[0][1], problem.startAlt)] 
     
     partialDistance = problem.startAlt
     for i in range(1, len(waypoints)):
-        partialDistance += (problem.goalAlt - problem.startAlt) / totalDistance * dist(waypoints[i-1], waypoints[i])
+        partialDistance += (problem.goalAlt - problem.startAlt) * dist(waypoints[i-1], waypoints[i]) / totalDistance
         altitudePoints.append((waypoints[i][0], waypoints[i][1], partialDistance))
 
+    print(altitudePoints)
     return altitudeSmooth(altitudePoints, problem)
 
 def dist(p1, p2):
@@ -231,6 +233,22 @@ def intersect(ellipse, point1, point2):
         return True
     return False
 
+def intersectLine(linePoint1, linePoint2, point1, point2):
+    '''
+    determines if two line segements intersect
+    '''
+    point1 = (point1[0], point1[1])
+    point2 = (point2[0], point2[1])
+    if linePoint1 == point1 or linePoint2 == point1 or linePoint1 == point2 or linePoint2 == point2:
+        return False
+    return ccw(linePoint1, point1, point2) != ccw(linePoint2, point1, point2) and ccw(linePoint1, linePoint2, point1) != ccw(linePoint1, linePoint2, point2)
+    
+def ccw(point1, point2, point3):
+    '''
+    determines if points are counter-clockwise
+    '''
+    return (point3[1] - point1[1]) * (point2[0] - point1[0]) > (point2[1] - point1[1]) * (point3[0] - point1[0])
+
 def altitudeSmooth(altitudePoints, problem):
     '''
     shortens the path by not considering some obstacles that are not present at a specific altitude
@@ -238,15 +256,27 @@ def altitudeSmooth(altitudePoints, problem):
     smoothPoints = [altitudePoints[0]]
     i = 0
     while (i < len(altitudePoints) - 1):
+        ioriginal = i
         for j in range(len(altitudePoints) - 1, i, -1):
             #there is guaranteed to be a valid j that is greater than i, namely i + 1
             valid = True
             for k in problem.obstacles:
                 if intersect(k, altitudePoints[i], altitudePoints[j]):
                     valid = False
+            for k in range(len(problem.boundary)):
+                if intersectLine(problem.boundary[k], problem.boundary[(k + 1) % len(problem.boundary)], altitudePoints[i], altitudePoints[j]):
+                    valid = False
             if valid:
                 smoothPoints.append(altitudePoints[j])
                 i = j
                 break;
-    return smoothPoints
+        if i == ioriginal:
+            print("Altitude Smoothing Failed!")
+            j = i + 1
+            print(altitudePoints[i], altitudePoints[j])
+            for k in range(len(problem.boundary)):
+                if intersectLine(problem.boundary[k], problem.boundary[(k + 1) % len(problem.boundary)], altitudePoints[i], altitudePoints[j]):
+                    print(problem.boundary[k], problem.boundary[(k + 1) % len(problem.boundary)])
 
+            return altitudePoints
+    return smoothPoints
